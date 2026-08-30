@@ -1,3 +1,6 @@
+// @vitest-environment node
+// 순수 함수 테스트라 DOM이 필요 없다. 이 Node 빌드에서 jsdom 환경이
+// 시작되지 않는 문제(docs/follow-ups/vitest-jsdom-undici-node.md)도 피한다.
 import { describe, expect, it } from "vitest";
 
 import { cn } from "@/lib/utils";

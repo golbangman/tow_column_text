@@ -128,3 +128,147 @@
     @apply font-sans;
   }
 }
+/* 대역 2단 문서: 화면 편집 뷰와 인쇄 지면.
+   <thead>는 브라우저가 인쇄 시 매 쪽 자동으로 반복한다. */
+
+.tc-doc {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  border-collapse: collapse;
+  table-layout: fixed;
+  overflow: hidden;
+}
+
+/* 열 폭은 <colgroup>이 고정한다. 버튼 유무와 무관하게 폭이 변하지 않는다. */
+.tc-col-num {
+  width: 2.5rem;
+}
+
+.tc-col-action {
+  width: 6rem;
+}
+
+.tc-running-header th {
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+  text-align: left;
+}
+
+.tc-running-title {
+  margin-right: 1rem;
+}
+
+.tc-running-url {
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+
+.tc-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.tc-row:last-child {
+  border-bottom: 0;
+}
+
+.tc-num {
+  padding: 0.6rem 0.6rem;
+  vertical-align: top;
+  text-align: right;
+  font-size: 0.8em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+  border-right: 1px solid var(--border);
+}
+
+.tc-cell {
+  padding: 0.6rem 0.9rem;
+  vertical-align: top;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.tc-cell[lang="en"] {
+  border-right: 1px solid var(--border);
+}
+
+.tc-action {
+  padding: 0.6rem 0.9rem;
+  vertical-align: top;
+  text-align: right;
+  border-left: 1px solid var(--border);
+}
+
+@page {
+  size: A4 portrait;
+  /* 좌우 여백은 필기용 */
+  margin: 18mm 26mm;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .tc-doc {
+    border: 0;
+    border-radius: 0;
+    /* overflow가 걸려 있으면 일부 브라우저가 <thead>를 매 쪽 반복하지 않는다 */
+    overflow: visible;
+  }
+
+  .tc-running-header {
+    display: table-header-group;
+  }
+
+  .tc-running-header th {
+    border-bottom: 1px solid #999;
+    font-size: 9pt;
+    color: #333;
+  }
+
+  .tc-running-url {
+    color: #555;
+  }
+
+  .tc-row {
+    break-inside: avoid;
+    border-bottom: 1px solid #ccc;
+  }
+
+  /* 인쇄에서는 조작 열을 없애고 그 폭을 영어·한국어가 나눠 갖는다 */
+  .tc-action {
+    display: none;
+  }
+
+  .tc-col-num {
+    width: 8mm;
+  }
+
+  .tc-col-action {
+    width: 0;
+  }
+
+  .tc-num {
+    padding: 3mm 2mm;
+    font-size: 8pt;
+    color: #666;
+    border-right: 1px solid #ccc;
+  }
+
+  .tc-cell {
+    font-size: 10.5pt;
+    padding: 3mm 4mm;
+  }
+
+  .tc-cell[lang="en"] {
+    border-right: 1px solid #ccc;
+  }
+}

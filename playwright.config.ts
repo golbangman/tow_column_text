@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = "http://localhost:3000";
+// 여러 앱을 함께 띄우는 환경에서는 PLAYWRIGHT_BASE_URL로 이 앱의 주소를 지정한다.
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
 // 브라우저가 이미 설치된 환경(예: Claude Code 원격 세션)에서는
 // PLAYWRIGHT_CHROMIUM_PATH로 실행 파일을 직접 지정한다.
