@@ -268,12 +268,12 @@ function FmtSelect({
   onChange: (fmt: Fmt) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 text-sm text-muted-foreground">
-      {label}
+    <label className="flex items-center gap-2">
+      <span className="w-20 shrink-0 text-sm text-muted-foreground">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as Fmt)}
-        className="rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground"
+        className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm"
       >
         {FMT_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -431,36 +431,67 @@ function TranslationView({ doc, onBack }: { doc: Doc; onBack: () => void }) {
           </span>
         </div>
 
-        <span className="text-sm tabular-nums text-muted-foreground">
-          {doneCount} / {doc.sentences.length}
-        </span>
+        <section className="flex flex-col gap-3 rounded-lg border p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">번역</span>
+            <span className="text-sm tabular-nums text-muted-foreground">
+              {doneCount} / {doc.sentences.length}
+            </span>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-[width]"
+              style={{
+                width: `${
+                  doc.sentences.length
+                    ? (doneCount / doc.sentences.length) * 100
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+
           {phase === "running" ? (
-            <Button variant="outline" onClick={stop}>
+            <Button variant="outline" className="w-full" onClick={stop}>
               정지
             </Button>
           ) : (
-            <Button onClick={start} disabled={doneCount === doc.sentences.length}>
+            <Button
+              className="w-full"
+              onClick={start}
+              disabled={doneCount === doc.sentences.length}
+            >
               {doneCount === 0 ? "번역 시작" : "이어서 번역"}
             </Button>
           )}
-          <FmtSelect label="표시 형식" value={screenFmt} onChange={setScreenFmt} />
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => window.print()}>
-            인쇄
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => window.print()}
-            title="인쇄 대화상자에서 대상을 'PDF로 저장'으로 고르세요"
-          >
-            PDF 저장
-          </Button>
+          <FmtSelect label="표시 형식" value={screenFmt} onChange={setScreenFmt} />
+        </section>
+
+        <section className="flex flex-col gap-3 rounded-lg border p-4">
+          <span className="text-sm font-medium">출력</span>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => window.print()}
+            >
+              인쇄
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => window.print()}
+              title="인쇄 대화상자에서 대상을 'PDF로 저장'으로 고르세요"
+            >
+              PDF 저장
+            </Button>
+          </div>
+
           <FmtSelect label="저장 형식" value={printFmt} onChange={setPrintFmt} />
-        </div>
+        </section>
       </aside>
 
       <div className="tc-scroll min-h-0 flex-1 overflow-y-auto print:overflow-visible">
