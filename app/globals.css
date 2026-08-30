@@ -212,6 +212,13 @@
     display: none !important;
   }
 
+  /* 화면에서만 고정 높이로 스크롤하고, 인쇄에서는 전체가 흐르게 둔다 */
+  .tc-scroll {
+    overflow: visible !important;
+    height: auto !important;
+    flex: none !important;
+  }
+
   body {
     background: #fff;
     color: #000;
@@ -270,5 +277,93 @@
 
   .tc-cell[lang="en"] {
     border-right: 1px solid #ccc;
+  }
+
+  .tc-flow h2 {
+    font-size: 9pt;
+  }
+
+  .tc-flow p {
+    margin: 0 0 2mm;
+    font-size: 10.5pt;
+    line-height: 1.6;
+    break-inside: avoid;
+  }
+
+  .tc-flow .tc-flow-num {
+    font-size: 8pt;
+  }
+
+  /* 저장 형식: 인쇄에서 어느 표현을 낼지 data-print가 정한다 */
+  [data-print="both"] .rep-ko,
+  [data-print="both"] .rep-en {
+    display: none;
+  }
+
+  [data-print="ko"] .rep-both,
+  [data-print="ko"] .rep-en {
+    display: none;
+  }
+
+  [data-print="ko"] .rep-ko {
+    display: block;
+  }
+
+  [data-print="en"] .rep-both,
+  [data-print="en"] .rep-ko {
+    display: none;
+  }
+
+  [data-print="en"] .rep-en {
+    display: block;
+  }
+}
+
+/* 표 대신 번호를 붙인 문장을 흐르는 글로 보이는 표현(한국어만 / 영어만) */
+.tc-flow {
+  display: none;
+}
+
+.tc-flow h2 {
+  margin: 0 0 1rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.tc-flow p {
+  margin: 0 0 0.6rem;
+  line-height: 1.7;
+}
+
+.tc-flow .tc-flow-num {
+  margin-right: 0.5rem;
+  font-size: 0.8em;
+  color: var(--muted-foreground);
+}
+
+/* 표시 형식: 화면 오른쪽에 어느 표현을 낼지 data-screen이 정한다.
+   인쇄에는 관여하지 않도록 @media screen으로 가둔다. */
+@media screen {
+  [data-screen="both"] .rep-ko,
+  [data-screen="both"] .rep-en {
+    display: none;
+  }
+
+  [data-screen="ko"] .rep-both,
+  [data-screen="ko"] .rep-en {
+    display: none;
+  }
+
+  [data-screen="ko"] .rep-ko {
+    display: block;
+  }
+
+  [data-screen="en"] .rep-both,
+  [data-screen="en"] .rep-ko {
+    display: none;
+  }
+
+  [data-screen="en"] .rep-en {
+    display: block;
   }
 }
