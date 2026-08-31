@@ -1,0 +1,144 @@
+노트북 서버 구축 전체 순서
+===========================
+
+앱 정보
+- 번역 엔진: Playwright + Google 번역 (API 키 불필요)
+- 데이터 저장 위치: data/records.json
+
+
+1단계 — 코드 복사
+-----------------
+노트북에서 아래 명령 실행:
+
+  git clone <이 저장소 주소>
+  cd tow_column_text
+
+git이 없으면 현재 PC에서 scp로 직접 복사해도 됩니다.
+
+  scp -r /경로/tow_column_text user@노트북IP:/원하는경로
+
+
+2단계 — Bun + 의존성 설치
+-------------------------
+  curl -fsSL https://bun.sh/install | bash
+  source ~/.bashrc
+  bun install
+
+번역에 Playwright 브라우저가 필요합니다.
+
+  bunx playwright install chromium
+
+
+3단계 — 프로덕션 빌드 및 PM2로 상시 실행
+-----------------------------------------
+  bun run build
+
+PM2 설치 (Node.js 필요):
+
+  npm install -g pm2
+
+앱 등록 및 자동 시작 설정:
+
+  pm2 start "bun start" --name tow-column
+  pm2 save
+  pm2 startup
+
+마지막 명령이 출력하는 sudo 명령을 복사해서 한 번 더 실행해야 재부팅 후 자동 시작이 적용됩니다.
+
+
+4단계 — 노트북 절전 방지 (Ubuntu 기준)
+---------------------------------------
+뚜껑을 닫아도 서버가 꺼지지 않도록 설정합니다.
+
+  sudo sed -i 's/#HandleLidSwitch=suspend/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
+  sudo systemctl restart systemd-logind
+
+
+5단계 — 어디서든 접속하기 (Cloudflare Tunnel)
+---------------------------------------------
+공유기 포트포워딩 없이 외부에서 접속할 수 있는 방법입니다.
+
+cloudflared 설치 (Ubuntu):
+
+  curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb
+  sudo dpkg -i cloudflared.deb
+
+터널 실행 (앱이 먼저 떠 있어야 합니다):
+
+  cloudflared tunnel --url http://localhost:3000
+
+실행하면 아래와 같은 주소가 출력됩니다.
+  https://xxxx-xxxx.trycloudflare.com
+
+이 주소로 어디서든 접속할 수 있습니다.
+주소는 재실행할 때마다 바뀝니다. 고정 주소가 필요하면 아래 6단계를 진행하세요.
+
+
+6단계 — 고정 주소 설정 (Cloudflare Named Tunnel)
+-------------------------------------------------
+사전 조건:
+- Cloudflare 계정 (무료)
+- 본인 소유의 도메인 (Cloudflare 네임서버로 등록된 것)
+
+도메인이 없으면 Cloudflare Registrar 또는 Namecheap 등에서 구매 후
+Cloudflare 네임서버로 옮기면 됩니다.
+
+1) cloudflared 로그인
+
+  cloudflared tunnel login
+
+출력된 URL을 브라우저에서 열어 인증합니다.
+인증 완료 시 ~/.cloudflared/cert.pem 이 생성됩니다.
+
+2) 터널 생성
+
+  cloudflared tunnel create tow-column
+
+~/.cloudflared/<UUID>.json 파일이 생성됩니다. UUID를 기억해두세요.
+
+3) 설정 파일 작성
+
+  nano ~/.cloudflared/config.yml
+
+아래 내용을 붙여넣고 <UUID>와 도메인을 본인 것으로 바꿉니다.
+
+  tunnel: <UUID>
+  credentials-file: /home/<사용자명>/.cloudflared/<UUID>.json
+
+  ingress:
+    - hostname: tow.내도메인.com
+      service: http://localhost:3000
+    - service: http_status:404
+
+4) DNS 레코드 연결
+
+  cloudflared tunnel route dns tow-column tow.내도메인.com
+
+5) 터널 실행
+
+  cloudflared tunnel run tow-column
+
+https://tow.내도메인.com 으로 고정 주소 접속이 가능합니다.
+HTTPS는 자동 적용됩니다.
+
+6) 부팅 시 자동 시작
+
+  sudo cloudflared service install
+  sudo systemctl enable cloudflared
+  sudo systemctl start cloudflared
+
+
+데이터 백업
+-----------
+모든 번역 기록은 data/records.json 에 쌓입니다.
+주기적으로 이 파일만 백업하면 됩니다.
+
+  cp data/records.json data/records.$(date +%Y%m%d).bak
+
+
+자주 쓰는 PM2 명령
+------------------
+  pm2 list              # 실행 중인 앱 목록
+  pm2 logs tow-column   # 로그 확인
+  pm2 restart tow-column  # 재시작
+  pm2 stop tow-column   # 중지
